@@ -27,7 +27,7 @@ module.exports="#define GLSLIFY 1\nuniform sampler2D lightTex;\nuniform float ti
 },{}],"isEI":[function(require,module,exports) {
 module.exports={cylinder:{frag:require("./cylinder.frag")},feedback:{frag:require("./feedback.frag")},flicker:{frag:require("./flicker.frag")},passThrough:{vert:require("./passThrough.vert")},room:{frag:require("./room.frag")},screenLeft:{frag:require("./screenLeft.frag")},screenRight:{frag:require("./screenRight.frag")},spinner:{frag:require("./spinner.frag")}};
 },{"./cylinder.frag":"tYiW","./feedback.frag":"YsWi","./flicker.frag":"gY4V","./passThrough.vert":"V2Dc","./room.frag":"NYuK","./screenLeft.frag":"lTs6","./screenRight.frag":"Fe02","./spinner.frag":"eVBf"}],"z8ji":[function(require,module,exports) {
-module.exports="lights.d40b55d1.png";
+module.exports="lights.66736ccb.png";
 },{}],"aL47":[function(require,module,exports) {
 module.exports="letters.a603bd7b.png";
 },{}],"JQPa":[function(require,module,exports) {
