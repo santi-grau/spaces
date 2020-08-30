@@ -1,51 +1,12 @@
-import { Group, Mesh, AnimationMixer, MeshBasicMaterial, TextureLoader, ShaderMaterial, DoubleSide, Clock, Vector4 } from 'three'
-import tex from './../assets/lights.jpg'
-import FlickerShader from './flicker.*'
-import CylinderShader from './cylinder.*'
-import ScreenShader from './screen.*'
+import { Group, Mesh, AnimationMixer, Vector2, Clock, MeshNormalMaterial, MeshBasicMaterial } from 'three'
+import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js'
 
-class FlickerMaterial extends ShaderMaterial{
-    constructor( ref ){
-        super( { vertexShader : FlickerShader.vert, fragmentShader : FlickerShader.frag } )
+import Shaders from './shaders/*.*'
+import { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, RoomMaterial, SpinnerMaterial } from './Materials'
 
-        var tLoader = new TextureLoader()
-        var t = tLoader.load( tex )
-        t.flipY = false
-        this.uniforms.lightTex = { value : t }
-        
-        this.side = DoubleSide
-        this.skinning = true
-    }
-
-    step( time ){
-        this.uniforms.time = { value : time }
-    }
-}
-
-class CylinderMaterial extends ShaderMaterial{
-    constructor(){
-        super( { vertexShader : CylinderShader.vert, fragmentShader : CylinderShader.frag } )
-        this.side = DoubleSide
-    }
-
-    step( time ){
-        this.uniforms.time = { value : time }
-    }
-}
-
-class ScreenMaterial extends ShaderMaterial{
-    constructor( coords ){
-        super( { vertexShader : ScreenShader.vert, fragmentShader : ScreenShader.frag } )
-        this.uniforms.coords = { value : new Vector4( coords.x1, coords.x2, coords.y1, coords.y2 ) }
-    }
-
-    step( time ){
-        this.uniforms.time = { value : time }
-    }
-}
 
 class Room extends Group{
-    constructor( gltf ){
+    constructor( gltf, renderer ){
         super()
 
         this.add( gltf.scene )
@@ -56,38 +17,61 @@ class Room extends Group{
         action.loop = true
         action.play()
 
-        this.scale.set( 10, 10, 10 )
-        var tLoader = new TextureLoader()
-        var t = tLoader.load( tex )
-        t.flipY = false
+        this.frame = 0
 
-        this.mods = []
+        // setup GPUcompute
+        this.computeSize = new Vector2( 1025, 512 )
+        this.gpuCompute = new GPUComputationRenderer( this.computeSize.x, this.computeSize.y, renderer )
+        this.dtPosition = this.gpuCompute.createTexture()
+        var ps = []
+        for( var i = 0 ; i < this.computeSize.x * this.computeSize.y ; i++ ) ps.push( 0,0,0,1 )
+        this.positionVariable = this.gpuCompute.addVariable( 'texturePosition', Shaders.feedback.frag, this.dtPosition )
+        this.gpuCompute.setVariableDependencies( this.positionVariable, [ this.positionVariable ] )
+        this.positionUniforms = this.positionVariable.material.uniforms
+        this.gpuCompute.init()
+        this.positionUniforms[ 'time' ] = { value: 0.0 }
+        this.positionUniforms[ 'size' ] = { value: new Vector2( this.computeSize.x, this.computeSize.y ) }
+
+        this.scale.set( 10, 10, 10 )
+
+        this.objs = {}
 
         this.traverse( child => {
             
             if ( child instanceof Mesh ) {
+                this.objs[ child.name ] = child
                 if( child.name == 'Cylinder' ) {
-                    child.material = new CylinderMaterial( )
-                    this.mods.push( child )
+                    child.material = new CylinderMaterial( this.computeSize )
                 } else if( child.name == 'screen_l' ) {
-                    child.material = new ScreenMaterial( { x1 : 0.169856, x2 : 0.22645, y1 : 0.998413, y2 : 0.898428 } )
-                    this.mods.push( child )
+                    child.material = new ScreenLeftMaterial( { x1 : 0.169856, x2 : 0.22645, y1 : 0.998413, y2 : 0.898428 } )
                 } else if( child.name == 'screen_r' ) {
-                    child.material = new ScreenMaterial( { x1 : 0.248639, x2 : 0.305233, y1 : 0.998033, y2 : 0.898048 } )
-                    this.mods.push( child )
+                    child.material = new ScreenRightMaterial( { x1 : 0.248639, x2 : 0.305233, y1 : 0.998033, y2 : 0.898048 } )
+                } else if( child.name == 'Human_mesh' ) {
+                    child.material = new MeshNormalMaterial( { skinning : true } )
+                } else if( child.name == 'Spinner' ) {
+                    child.material = new SpinnerMaterial( { x1 : 0.673123, x2 : 0.993553, y1 : 0.995739, y2 : 0.942228 } )
+                } else if( child.name == 'Room' ) {
+                    child.material = new RoomMaterial(  )
                 } else {
                     child.material = new FlickerMaterial( child.material )
-                    this.mods.push( child )
                 }
-
             }
         } )
     }
 
     step( time ){
-        var delta = this.clock.getDelta();
-        if ( this.mixer ) this.mixer.update( delta );
-        this.mods.forEach( m => m.material.step( time ) )
+
+        this.positionUniforms[ 'time' ].value += 0.1
+        if( this.frame++ % 1 == 0 ){
+            this.gpuCompute.compute()
+            this.objs.Cylinder.material.uniforms.tex.value = this.gpuCompute.getCurrentRenderTarget( this.positionVariable ).texture
+
+            this.objs.screen_r.material.uniforms.tex.value = this.gpuCompute.getCurrentRenderTarget( this.positionVariable ).texture
+        }
+
+        ( this.mixer ) && this.mixer.update( this.clock.getDelta() )
+        
+        Object.values( this.objs ).forEach( m => ( m.material.step ) && m.material.step( time ) )
     }
 }
 

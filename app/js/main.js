@@ -1,4 +1,4 @@
-import { Scene, WebGLRenderer, PerspectiveCamera } from 'three'
+import { Scene, WebGLRenderer, PerspectiveCamera, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
@@ -18,20 +18,22 @@ class Main{
         // orbit controls
         this.controls = new OrbitControls( this.camera, this.renderer.domElement )
         
-        // load gltf
-        new GLTFLoader( ).load( scene, ( gltf ) => this.scene.add( new Room( gltf ) ) )
-
+        // load gltf, pass render reference for GPUcompute
+        new GLTFLoader( ).load( scene, ( gltf ) => this.scene.add( new Room( gltf, this.renderer ) ) )
+        
         this.step( 0 )
         this.resize()
+
+        this.camera.lookAt( new Vector3( 0,0,0 ) )
     }
 
     resize( ){ // just camera setup
         let [ width, height ] = [ this.node.offsetWidth, this.node.offsetHeight ]
         this.renderer.setSize( width, height )
-        this.renderer.setPixelRatio( 2 )
+        this.renderer.setPixelRatio( 1 )
         var camView = { fov : 35, aspect : width / height, near : 0.001, far : 10000 }
         for ( var prop in camView ) this.camera[ prop ] = camView[ prop ]
-        this.camera.position.set( 0, 0, 10 )
+        this.camera.position.set( 0, -20, 50 )
         this.camera.updateProjectionMatrix()
     }
 
