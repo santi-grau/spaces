@@ -1,6 +1,7 @@
 import { TextureLoader, ShaderMaterial, Vector2, DoubleSide, Vector4, NearestFilter, MeshBasicMaterial } from 'three'
 import tex from './../assets/lights_a.png'
 import letter from './../assets/letters.png'
+import diffuse from './../assets/Diffuse_bake.jpg'
 import Shaders from './shaders/*.*'
 import BaseColor from './../assets/gallery_diffuse.png'
 
@@ -12,6 +13,27 @@ class FlickerMaterial extends ShaderMaterial{
         var t = tLoader.load( tex )
         t.flipY = false
         this.uniforms.lightTex = { value : t }
+        
+        this.side = DoubleSide
+    }
+
+    step( time ){
+        this.uniforms.time = { value : time }
+    }
+}
+
+class RoomMaterial extends ShaderMaterial{
+    constructor( ){
+        super( { vertexShader : Shaders.passThrough.vert, fragmentShader : Shaders.room.frag } )
+
+        var tLoader = new TextureLoader()
+        var t = tLoader.load( tex )
+        t.flipY = false
+        var t2 = tLoader.load( diffuse )
+        t2.flipY = false
+
+        this.uniforms.lightTex = { value : t }
+        this.uniforms.roomTex = { value : t2 }
         
         this.side = DoubleSide
     }
@@ -123,4 +145,4 @@ class SpinnerMaterial extends ShaderMaterial{
 }
 
 
-export { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, GalleryMaterial, SpinnerMaterial }
+export { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, GalleryMaterial, SpinnerMaterial, RoomMaterial }

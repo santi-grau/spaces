@@ -2,7 +2,7 @@ import { Group, Mesh, AnimationMixer, Vector2, Clock, MeshNormalMaterial, MeshBa
 import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js'
 
 import Shaders from './shaders/*.*'
-import { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, GalleryMaterial, SpinnerMaterial } from './Materials'
+import { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, GalleryMaterial, SpinnerMaterial, RoomMaterial } from './Materials'
 
 
 class Room extends Group{
@@ -51,7 +51,7 @@ class Room extends Group{
                 } else if( child.name == 'Spinner' ) {
                     child.material = new SpinnerMaterial( { x1 : 0.673123, x2 : 0.993553, y1 : 0.995739, y2 : 0.942228 } )
                 } else if( child.name == 'Room' ) {
-                    child.material = new FlickerMaterial( child.material )
+                    child.material = new RoomMaterial( child.material )
                 } else if( child.name == 'Gallery_cut' ) {
                     child.material = new GalleryMaterial( )
                 } else {
