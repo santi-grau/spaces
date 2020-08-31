@@ -2,7 +2,7 @@ import { Group, Mesh, AnimationMixer, Vector2, Clock, MeshNormalMaterial, MeshBa
 import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js'
 
 import Shaders from './shaders/*.*'
-import { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, RoomMaterial, SpinnerMaterial } from './Materials'
+import { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, GalleryMaterial, SpinnerMaterial } from './Materials'
 
 
 class Room extends Group{
@@ -20,7 +20,7 @@ class Room extends Group{
         this.frame = 0
 
         // setup GPUcompute
-        this.computeSize = new Vector2( 1025, 512 )
+        this.computeSize = new Vector2( 512, 256 )
         this.gpuCompute = new GPUComputationRenderer( this.computeSize.x, this.computeSize.y, renderer )
         this.dtPosition = this.gpuCompute.createTexture()
         var ps = []
@@ -32,7 +32,7 @@ class Room extends Group{
         this.positionUniforms[ 'time' ] = { value: 0.0 }
         this.positionUniforms[ 'size' ] = { value: new Vector2( this.computeSize.x, this.computeSize.y ) }
 
-        this.scale.set( 10, 10, 10 )
+        // this.scale.set( 10, 10, 10 )
 
         this.objs = {}
 
@@ -40,18 +40,20 @@ class Room extends Group{
             
             if ( child instanceof Mesh ) {
                 this.objs[ child.name ] = child
-                if( child.name == 'Cylinder' ) {
+                if( child.name == 'New_screen' ) {
                     child.material = new CylinderMaterial( this.computeSize )
                 } else if( child.name == 'screen_l' ) {
-                    child.material = new ScreenLeftMaterial( { x1 : 0.169856, x2 : 0.22645, y1 : 0.998413, y2 : 0.898428 } )
+                    child.material = new ScreenLeftMaterial( { x1 : 0.006829, x2 : 0.063423, y1 : 0.998413, y2 : 0.898428 } )
                 } else if( child.name == 'screen_r' ) {
-                    child.material = new ScreenRightMaterial( { x1 : 0.248639, x2 : 0.305233, y1 : 0.998033, y2 : 0.898048 } )
+                    child.material = new ScreenRightMaterial( { x1 : 0.105298, x2 : 0.161892, y1 : 0.998033, y2 : 0.898048 } )
                 } else if( child.name == 'Human_mesh' ) {
                     child.material = new MeshNormalMaterial( { skinning : true } )
                 } else if( child.name == 'Spinner' ) {
                     child.material = new SpinnerMaterial( { x1 : 0.673123, x2 : 0.993553, y1 : 0.995739, y2 : 0.942228 } )
                 } else if( child.name == 'Room' ) {
-                    child.material = new RoomMaterial(  )
+                    child.material = new FlickerMaterial( child.material )
+                } else if( child.name == 'Gallery_cut' ) {
+                    child.material = new GalleryMaterial( )
                 } else {
                     child.material = new FlickerMaterial( child.material )
                 }
@@ -64,7 +66,7 @@ class Room extends Group{
         this.positionUniforms[ 'time' ].value += 0.1
         if( this.frame++ % 1 == 0 ){
             this.gpuCompute.compute()
-            this.objs.Cylinder.material.uniforms.tex.value = this.gpuCompute.getCurrentRenderTarget( this.positionVariable ).texture
+            this.objs.New_screen.material.uniforms.tex.value = this.gpuCompute.getCurrentRenderTarget( this.positionVariable ).texture
 
             this.objs.screen_r.material.uniforms.tex.value = this.gpuCompute.getCurrentRenderTarget( this.positionVariable ).texture
         }

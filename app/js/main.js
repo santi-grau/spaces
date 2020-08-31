@@ -2,7 +2,7 @@ import { Scene, WebGLRenderer, PerspectiveCamera, Vector3 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
-import scene from './../assets/room.glb'
+import scene from './../assets/room_a.glb'
 import Room from './Room'
 
 class Main{
@@ -23,8 +23,6 @@ class Main{
         
         this.step( 0 )
         this.resize()
-
-        this.camera.lookAt( new Vector3( 0,0,0 ) )
     }
 
     resize( ){ // just camera setup
@@ -33,8 +31,10 @@ class Main{
         this.renderer.setPixelRatio( 1 )
         var camView = { fov : 35, aspect : width / height, near : 0.001, far : 10000 }
         for ( var prop in camView ) this.camera[ prop ] = camView[ prop ]
-        this.camera.position.set( 0, -20, 50 )
+        this.camera.position.set( 0, 3, -30 )
+        
         this.camera.updateProjectionMatrix()
+        // this.camera.lookAt( new Vector3( 0, 0, -300 ) )
     }
 
     step( time ){

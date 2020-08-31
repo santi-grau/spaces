@@ -1,8 +1,8 @@
-import { TextureLoader, ShaderMaterial, Vector2, DoubleSide, Vector4, NearestFilter } from 'three'
-import tex from './../assets/lights.png'
+import { TextureLoader, ShaderMaterial, Vector2, DoubleSide, Vector4, NearestFilter, MeshBasicMaterial } from 'three'
+import tex from './../assets/lights_a.png'
 import letter from './../assets/letters.png'
-
 import Shaders from './shaders/*.*'
+import BaseColor from './../assets/gallery_diffuse.png'
 
 class FlickerMaterial extends ShaderMaterial{
     constructor( ){
@@ -85,20 +85,21 @@ class ScreenRightMaterial extends ShaderMaterial{
     }
 }
 
-class RoomMaterial extends ShaderMaterial{
-    constructor( ref ){
-        super( { vertexShader : Shaders.passThrough.vert, fragmentShader : Shaders.room.frag } )
+class GalleryMaterial extends MeshBasicMaterial{
+    constructor(  ){
+        super( )
+
+        this.side = DoubleSide
 
         var tLoader = new TextureLoader()
-        var t = tLoader.load( tex )
+        var t = tLoader.load( BaseColor )
         t.flipY = false
-        this.uniforms.lightTex = { value : t }
-        
-        this.side = DoubleSide
+
+        this.map = t
     }
 
     step( time ){
-        this.uniforms.time = { value : time }
+       
     }
 }
 
@@ -122,4 +123,4 @@ class SpinnerMaterial extends ShaderMaterial{
 }
 
 
-export { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, RoomMaterial, SpinnerMaterial }
+export { FlickerMaterial, CylinderMaterial, ScreenLeftMaterial, ScreenRightMaterial, GalleryMaterial, SpinnerMaterial }
